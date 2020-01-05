@@ -1,0 +1,23 @@
+{
+  "name": "uifactory",
+  "version": "1.0.0",
+  "description": "",
+  "main": "gulpfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "gulp": "gulp",
+    "gulp-watch": "gulp watch",
+    "gulp-serve": "gulp serve"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JamesRobertHugginsNgo/uifactory.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JamesRobertHugginsNgo/uifactory/issues"
+  },
+  "homepage": "https://github.com/JamesRobertHugginsNgo/uifactory#readme"
+}
