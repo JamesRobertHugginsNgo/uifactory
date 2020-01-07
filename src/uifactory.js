@@ -14,7 +14,7 @@ const uiFactoryPropertyDescriptors = {
 	render: {
 		value(callback, chainCallback = true) {
 			const renderAttributes = (attributes, key, source) => {
-				if (attributes === null) {
+				if (attributes == null) {
 					return;
 				}
 
@@ -51,7 +51,7 @@ const uiFactoryPropertyDescriptors = {
 			const renderChildElements = (childElements, placeholder, source, key) => {
 				placeholder = placeholder || this.appendChild(document.createTextNode(''));
 
-				if (childElements === null) {
+				if (childElements == null) {
 					this.removeChild(placeholder);
 					return;
 				}

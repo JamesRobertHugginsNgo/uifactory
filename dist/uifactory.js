@@ -19,7 +19,7 @@ var uiFactoryPropertyDescriptors = {
       var chainCallback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
 
       var renderAttributes = function renderAttributes(attributes, key, source) {
-        if (attributes === null) {
+        if (attributes == null) {
           return;
         }
 
@@ -59,7 +59,7 @@ var uiFactoryPropertyDescriptors = {
       var renderChildElements = function renderChildElements(childElements, placeholder, source, key) {
         placeholder = placeholder || _this.appendChild(document.createTextNode(''));
 
-        if (childElements === null) {
+        if (childElements == null) {
           _this.removeChild(placeholder);
 
           return;
