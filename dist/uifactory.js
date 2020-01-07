@@ -2,6 +2,28 @@
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+
+/* exported stringToHtml */
+function stringToHtml(str) {
+  var element = document.createElement('div');
+  element.innerHTML = str;
+  return _toConsumableArray(element.childNodes).map(function (element) {
+    if (element instanceof HTMLElement) {
+      var childElements = stringToHtml(element.innerHTML);
+      return uiFactory(element, null, childElements);
+    }
+
+    return element;
+  });
+}
+
 var uiFactoryPropertyDescriptors = {
   definedByUiFactoryPropertyDescriptors: {
     value: true
@@ -110,13 +132,18 @@ var uiFactoryPropertyDescriptors = {
         }
 
         if (typeof childElements === 'string') {
-          var textNode = _this.insertBefore(document.createTextNode(childElements), placeholder);
+          // const textNode = this.insertBefore(document.createTextNode(childElements), placeholder);
+          // if (source && key) {
+          // 	source[key] = textNode;
+          // }
+          // return renderChildElements(textNode, placeholder, source, key);
+          childElements = stringToHtml(childElements);
 
           if (source && key) {
-            source[key] = textNode;
+            source[key] = childElements;
           }
 
-          return renderChildElements(textNode, placeholder, source, key);
+          return renderChildElements(childElements, placeholder, source, key);
         }
       };
 

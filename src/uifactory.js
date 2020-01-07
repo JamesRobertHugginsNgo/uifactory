@@ -1,3 +1,17 @@
+/* exported stringToHtml */
+function stringToHtml(str) {
+	const element = document.createElement('div');
+	element.innerHTML = str;
+	return [...element.childNodes].map((element) => {
+		if (element instanceof HTMLElement) {
+			const childElements = stringToHtml(element.innerHTML);
+			return uiFactory(element, null, childElements);
+		}
+
+		return element;
+	});
+}
+
 const uiFactoryPropertyDescriptors = {
 	definedByUiFactoryPropertyDescriptors: {
 		value: true
@@ -98,13 +112,17 @@ const uiFactoryPropertyDescriptors = {
 				}
 
 				if (typeof childElements === 'string') {
-					const textNode = this.insertBefore(document.createTextNode(childElements), placeholder);
+					// const textNode = this.insertBefore(document.createTextNode(childElements), placeholder);
+					// if (source && key) {
+					// 	source[key] = textNode;
+					// }
+					// return renderChildElements(textNode, placeholder, source, key);
 
+					childElements = stringToHtml(childElements);
 					if (source && key) {
-						source[key] = textNode;
+						source[key] = childElements;
 					}
-
-					return renderChildElements(textNode, placeholder, source, key);
+					return renderChildElements(childElements, placeholder, source, key);
 				}
 			};
 
