@@ -16,8 +16,7 @@ function stringToHtml(str) {
   element.innerHTML = str;
   return _toConsumableArray(element.childNodes).map(function (element) {
     if (element instanceof HTMLElement) {
-      var childElements = stringToHtml(element.innerHTML);
-      return uiFactory(element, null, childElements);
+      return uiFactory(element);
     }
 
     return element;
@@ -131,15 +130,10 @@ var uiFactoryPropertyDescriptors = {
           return _returnValue;
         }
 
-        if (typeof childElements === 'string') {
-          // const textNode = this.insertBefore(document.createTextNode(childElements), placeholder);
-          // if (source && key) {
-          // 	source[key] = textNode;
-          // }
-          // return renderChildElements(textNode, placeholder, source, key);
+        if (typeof childElements === 'boolean' || typeof childElements === 'number' || typeof childElements === 'string') {
           childElements = stringToHtml(childElements);
 
-          if (source && key) {
+          if (source && key && typeof source[key] !== 'function') {
             source[key] = childElements;
           }
 
@@ -177,5 +171,19 @@ function uiFactory(element, attributes, childElements, callback) {
 
   element.uiFactoryAttributes = attributes;
   element.uiFactoryChildElements = childElements;
+
+  var existingChildElements = _toConsumableArray(element.childNodes).map(function (childNode) {
+    return childNode instanceof HTMLElement ? uiFactory(childNode) : childNode;
+  });
+
+  if (existingChildElements.length > 0) {
+    var _element$uiFactoryChi;
+
+    element.uiFactoryChildElements = element.uiFactoryChildElements || [];
+    element.uiFactoryChildElements = Array.isArray(element.uiFactoryChildElements) ? element.uiFactoryChildElements : [element.uiFactoryChildElements];
+
+    (_element$uiFactoryChi = element.uiFactoryChildElements).unshift.apply(_element$uiFactoryChi, _toConsumableArray(existingChildElements));
+  }
+
   return element.render(callback, false);
 }

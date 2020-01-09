@@ -4,8 +4,7 @@ function stringToHtml(str) {
 	element.innerHTML = str;
 	return [...element.childNodes].map((element) => {
 		if (element instanceof HTMLElement) {
-			const childElements = stringToHtml(element.innerHTML);
-			return uiFactory(element, null, childElements);
+			return uiFactory(element);
 		}
 
 		return element;
@@ -111,15 +110,9 @@ const uiFactoryPropertyDescriptors = {
 					return returnValue;
 				}
 
-				if (typeof childElements === 'string') {
-					// const textNode = this.insertBefore(document.createTextNode(childElements), placeholder);
-					// if (source && key) {
-					// 	source[key] = textNode;
-					// }
-					// return renderChildElements(textNode, placeholder, source, key);
-
+				if (typeof childElements === 'boolean' || typeof childElements === 'number' || typeof childElements === 'string') {
 					childElements = stringToHtml(childElements);
-					if (source && key) {
+					if (source && key && typeof source[key] !== 'function') {
 						source[key] = childElements;
 					}
 					return renderChildElements(childElements, placeholder, source, key);
@@ -160,6 +153,17 @@ function uiFactory(element, attributes, childElements, callback) {
 
 	element.uiFactoryAttributes = attributes;
 	element.uiFactoryChildElements = childElements;
+
+	const existingChildElements = [...element.childNodes].map((childNode) => childNode instanceof HTMLElement ?
+		uiFactory(childNode) : childNode);
+
+	if (existingChildElements.length > 0) {
+		element.uiFactoryChildElements = element.uiFactoryChildElements || [];
+		element.uiFactoryChildElements = Array.isArray(element.uiFactoryChildElements) ? element.uiFactoryChildElements
+			: [element.uiFactoryChildElements];
+
+		element.uiFactoryChildElements.unshift(...existingChildElements);
+	}
 
 	return element.render(callback, false);
 }
