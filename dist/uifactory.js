@@ -11,6 +11,12 @@ function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
 
 /* exported stringToHtml */
+
+/**
+ * Create child elements for uiFactory.
+ * @param {string} str
+ * @returns {[HTMLElement|Text]}
+ */
 function stringToHtml(str) {
   var element = document.createElement('div');
   element.innerHTML = str;
@@ -22,6 +28,8 @@ function stringToHtml(str) {
     return element;
   });
 }
+/** Object descriptors to be used on HTMLElements. */
+
 
 var uiFactoryPropertyDescriptors = {
   definedByUiFactoryPropertyDescriptors: {
@@ -37,7 +45,7 @@ var uiFactoryPropertyDescriptors = {
     value: function value(callback) {
       var _this = this;
 
-      var chainCallback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+      var chainRender = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
 
       var renderAttributes = function renderAttributes(attributes, key, source) {
         if (attributes == null) {
@@ -111,9 +119,9 @@ var uiFactoryPropertyDescriptors = {
 
           _this.removeChild(placeholder);
 
-          if (childElements.definedByUifPropertyDescriptors) {
+          if (chainRender && childElements.definedByUiFactoryPropertyDescriptors) {
             return new Promise(function (resolve) {
-              childElements.render(resolve, chainCallback);
+              childElements.render(resolve);
             });
           } else {
             return;
@@ -160,30 +168,42 @@ var uiFactoryPropertyDescriptors = {
 };
 /* exported uiFactory */
 
+/**
+ * uiFactory factory.
+ * @param {string|HTMLElement} element
+ * @param {object|[object]} attributes
+ * @param {HTMLElement|function|string|Text|object|[HTMLElement|function|string|Text|object]} childElements
+ * @param {function} callback
+ * @returns {HTMLElement}
+ */
+
 function uiFactory(element, attributes, childElements, callback) {
+  // Pass element name as string to create a new element.
   if (typeof element === 'string') {
     element = document.createElement(element);
-  }
+  } // Add essential properties and method.
+
 
   if (!element.definedByUiFactoryPropertyDescriptors) {
     Object.defineProperties(element, uiFactoryPropertyDescriptors);
-  }
+  } // Add values to essential properties.
+
 
   element.uiFactoryAttributes = attributes;
-  element.uiFactoryChildElements = childElements;
+  element.uiFactoryChildElements = childElements; // Prepend existing child elements to property, otherwise it will be removed on the next render.
 
-  var existingChildElements = _toConsumableArray(element.childNodes).map(function (childNode) {
+  var originalChildElements = _toConsumableArray(element.childNodes).map(function (childNode) {
     return childNode instanceof HTMLElement ? uiFactory(childNode) : childNode;
   });
 
-  if (existingChildElements.length > 0) {
+  if (originalChildElements.length > 0) {
     var _element$uiFactoryChi;
 
-    element.uiFactoryChildElements = element.uiFactoryChildElements || [];
-    element.uiFactoryChildElements = Array.isArray(element.uiFactoryChildElements) ? element.uiFactoryChildElements : [element.uiFactoryChildElements];
+    element.uiFactoryChildElements = element.uiFactoryChildElements ? Array.isArray(element.uiFactoryChildElements) ? element.uiFactoryChildElements : [element.uiFactoryChildElements] : [];
 
-    (_element$uiFactoryChi = element.uiFactoryChildElements).unshift.apply(_element$uiFactoryChi, _toConsumableArray(existingChildElements));
-  }
+    (_element$uiFactoryChi = element.uiFactoryChildElements).unshift.apply(_element$uiFactoryChi, _toConsumableArray(originalChildElements));
+  } // Trigger render for this element only.
+
 
   return element.render(callback, false);
 }

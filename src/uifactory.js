@@ -1,4 +1,9 @@
 /* exported stringToHtml */
+/**
+ * Create child elements for uiFactory.
+ * @param {string} str
+ * @returns {[HTMLElement|Text]}
+ */
 function stringToHtml(str) {
 	const element = document.createElement('div');
 	element.innerHTML = str;
@@ -6,11 +11,11 @@ function stringToHtml(str) {
 		if (element instanceof HTMLElement) {
 			return uiFactory(element);
 		}
-
 		return element;
 	});
 }
 
+/** Object descriptors to be used on HTMLElements. */
 const uiFactoryPropertyDescriptors = {
 	definedByUiFactoryPropertyDescriptors: {
 		value: true
@@ -25,7 +30,7 @@ const uiFactoryPropertyDescriptors = {
 	},
 
 	render: {
-		value(callback, chainCallback = true) {
+		value(callback, chainRender = true) {
 			const renderAttributes = (attributes, key, source) => {
 				if (attributes == null) {
 					return;
@@ -56,7 +61,6 @@ const uiFactoryPropertyDescriptors = {
 					if (typeof source[key] !== 'function') {
 						delete source[key];
 					}
-
 					this.setAttribute(key, attributes);
 				}
 			};
@@ -81,19 +85,16 @@ const uiFactoryPropertyDescriptors = {
 					const returnValue = Promise.all(childElements.map(
 						(childElement, index) => renderChildElements(childElement, this.insertBefore(document.createTextNode(''), placeholder), childElements, index)
 					));
-
 					this.removeChild(placeholder);
-
 					return returnValue;
 				}
 
 				if (childElements instanceof HTMLElement || childElements instanceof Text) {
 					this.insertBefore(childElements, placeholder);
 					this.removeChild(placeholder);
-
-					if (childElements.definedByUifPropertyDescriptors) {
+					if (chainRender && childElements.definedByUiFactoryPropertyDescriptors) {
 						return new Promise((resolve) => {
-							childElements.render(resolve, chainCallback);
+							childElements.render(resolve);
 						});
 					} else {
 						return;
@@ -104,9 +105,7 @@ const uiFactoryPropertyDescriptors = {
 					const returnValue = Promise.all(Object.keys(childElements).map(
 						(key) => renderChildElements(childElements[key], this.insertBefore(document.createTextNode(''), placeholder), childElements, key)
 					));
-
 					this.removeChild(placeholder);
-
 					return returnValue;
 				}
 
@@ -123,7 +122,6 @@ const uiFactoryPropertyDescriptors = {
 				while (this.firstChild) {
 					this.removeChild(this.firstChild);
 				}
-
 				return renderChildElements(childElements);
 			};
 
@@ -142,28 +140,39 @@ const uiFactoryPropertyDescriptors = {
 };
 
 /* exported uiFactory */
+/**
+ * uiFactory factory.
+ * @param {string|HTMLElement} element
+ * @param {object|[object]} attributes
+ * @param {HTMLElement|function|string|Text|object|[HTMLElement|function|string|Text|object]} childElements
+ * @param {function} callback
+ * @returns {HTMLElement}
+ */
 function uiFactory(element, attributes, childElements, callback) {
+
+	// Pass element name as string to create a new element.
 	if (typeof element === 'string') {
 		element = document.createElement(element);
 	}
 
+	// Add essential properties and method.
 	if (!element.definedByUiFactoryPropertyDescriptors) {
 		Object.defineProperties(element, uiFactoryPropertyDescriptors);
 	}
 
+	// Add values to essential properties.
 	element.uiFactoryAttributes = attributes;
 	element.uiFactoryChildElements = childElements;
 
-	const existingChildElements = [...element.childNodes].map((childNode) => childNode instanceof HTMLElement ?
-		uiFactory(childNode) : childNode);
-
-	if (existingChildElements.length > 0) {
-		element.uiFactoryChildElements = element.uiFactoryChildElements || [];
-		element.uiFactoryChildElements = Array.isArray(element.uiFactoryChildElements) ? element.uiFactoryChildElements
-			: [element.uiFactoryChildElements];
-
-		element.uiFactoryChildElements.unshift(...existingChildElements);
+	// Prepend existing child elements to property, otherwise it will be removed on the next render.
+	const originalChildElements = [...element.childNodes].map((childNode) => childNode instanceof HTMLElement ? uiFactory(childNode) : childNode);
+	if (originalChildElements.length > 0) {
+		element.uiFactoryChildElements = element.uiFactoryChildElements
+			? Array.isArray(element.uiFactoryChildElements) ? element.uiFactoryChildElements : [element.uiFactoryChildElements]
+			: [];
+		element.uiFactoryChildElements.unshift(...originalChildElements);
 	}
 
+	// Trigger render for this element only.
 	return element.render(callback, false);
 }
