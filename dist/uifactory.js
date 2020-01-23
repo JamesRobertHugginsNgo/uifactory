@@ -13,7 +13,7 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 /* exported uiFactory */
 
 /**
- * uiFactory factory.
+ * Creates HTML elements with additional functionalities.
  * @param {string|HTMLElement} element
  * @param {object|[object]} attributes
  * @param {HTMLElement|function|string|Text|object|[HTMLElement|function|string|Text|object]} childElements
