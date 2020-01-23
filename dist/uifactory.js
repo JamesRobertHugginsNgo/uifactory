@@ -10,28 +10,50 @@ function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.
 
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
 
-/* exported stringToHtml */
+/* exported uiFactory */
 
 /**
- * Create child elements for uiFactory.
- * @param {string} str
- * @returns {[HTMLElement|Text]}
+ * uiFactory factory.
+ * @param {string|HTMLElement} element
+ * @param {object|[object]} attributes
+ * @param {HTMLElement|function|string|Text|object|[HTMLElement|function|string|Text|object]} childElements
+ * @param {function} callback
+ * @returns {HTMLElement}
  */
-function stringToHtml(str) {
-  var element = document.createElement('div');
-  element.innerHTML = str;
-  return _toConsumableArray(element.childNodes).map(function (element) {
-    if (element instanceof HTMLElement) {
-      return uiFactory(element);
-    }
+function uiFactory(element, attributes, childElements, callback) {
+  // Pass element name as string to create a new element.
+  if (typeof element === 'string') {
+    element = document.createElement(element);
+  } // Add essential properties and method.
 
-    return element;
+
+  if (!element.definedByUiFactoryPropertyDescriptors) {
+    Object.defineProperties(element, uiFactory.propertyDescriptors);
+  } // Add values to essential properties.
+
+
+  element.uiFactoryAttributes = attributes;
+  element.uiFactoryChildElements = childElements; // Prepend existing child elements to property, otherwise it will be removed on the next render.
+
+  var originalChildElements = _toConsumableArray(element.childNodes).map(function (childNode) {
+    return childNode instanceof HTMLElement ? uiFactory(childNode) : childNode;
   });
+
+  if (originalChildElements.length > 0) {
+    var _element$uiFactoryChi;
+
+    element.uiFactoryChildElements = element.uiFactoryChildElements ? Array.isArray(element.uiFactoryChildElements) ? element.uiFactoryChildElements : [element.uiFactoryChildElements] : [];
+
+    (_element$uiFactoryChi = element.uiFactoryChildElements).unshift.apply(_element$uiFactoryChi, _toConsumableArray(originalChildElements));
+  } // Trigger render for this element only.
+
+
+  return element.render(callback, false);
 }
 /** Object descriptors to be used on HTMLElements. */
 
 
-var uiFactoryPropertyDescriptors = {
+uiFactory.propertyDescriptors = {
   definedByUiFactoryPropertyDescriptors: {
     value: true
   },
@@ -114,7 +136,7 @@ var uiFactoryPropertyDescriptors = {
           return returnValue;
         }
 
-        if (childElements instanceof HTMLElement || childElements instanceof Text) {
+        if (childElements instanceof HTMLElement || childElements instanceof Text || childElements instanceof SVGElement) {
           _this.insertBefore(childElements, placeholder);
 
           _this.removeChild(placeholder);
@@ -139,7 +161,7 @@ var uiFactoryPropertyDescriptors = {
         }
 
         if (typeof childElements === 'boolean' || typeof childElements === 'number' || typeof childElements === 'string') {
-          childElements = stringToHtml(childElements);
+          childElements = uiFactory.stringToHtml(childElements);
 
           if (source && key && typeof source[key] !== 'function') {
             source[key] = childElements;
@@ -166,44 +188,85 @@ var uiFactoryPropertyDescriptors = {
     }
   }
 };
-/* exported uiFactory */
-
 /**
- * uiFactory factory.
- * @param {string|HTMLElement} element
- * @param {object|[object]} attributes
- * @param {HTMLElement|function|string|Text|object|[HTMLElement|function|string|Text|object]} childElements
- * @param {function} callback
- * @returns {HTMLElement}
+ * Create child elements for uiFactory.
+ * @param {string} str
+ * @returns {[HTMLElement|Text]}
  */
 
-function uiFactory(element, attributes, childElements, callback) {
-  // Pass element name as string to create a new element.
-  if (typeof element === 'string') {
-    element = document.createElement(element);
-  } // Add essential properties and method.
+uiFactory.stringToHtml = function (str) {
+  var element = document.createElement('div');
+  element.innerHTML = str;
+  return _toConsumableArray(element.childNodes).map(function (element) {
+    if (element instanceof HTMLElement) {
+      return uiFactory(element);
+    }
 
-
-  if (!element.definedByUiFactoryPropertyDescriptors) {
-    Object.defineProperties(element, uiFactoryPropertyDescriptors);
-  } // Add values to essential properties.
-
-
-  element.uiFactoryAttributes = attributes;
-  element.uiFactoryChildElements = childElements; // Prepend existing child elements to property, otherwise it will be removed on the next render.
-
-  var originalChildElements = _toConsumableArray(element.childNodes).map(function (childNode) {
-    return childNode instanceof HTMLElement ? uiFactory(childNode) : childNode;
+    return element;
   });
+};
 
-  if (originalChildElements.length > 0) {
-    var _element$uiFactoryChi;
+uiFactory.arrayToString = function (arr) {
+  var joiner = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : ' ';
 
-    element.uiFactoryChildElements = element.uiFactoryChildElements ? Array.isArray(element.uiFactoryChildElements) ? element.uiFactoryChildElements : [element.uiFactoryChildElements] : [];
+  if (!Array.isArray(arr)) {
+    arr = [arr];
+  }
 
-    (_element$uiFactoryChi = element.uiFactoryChildElements).unshift.apply(_element$uiFactoryChi, _toConsumableArray(originalChildElements));
-  } // Trigger render for this element only.
+  return arr.filter(function (val) {
+    return val != null;
+  }).join(joiner);
+};
 
+uiFactory.when = function (condition, trueValue, falseValue) {
+  if (typeof condition === 'function') {
+    condition = condition();
+  }
 
-  return element.render(callback, false);
+  if (condition) {
+    if (typeof trueValue === 'function') {
+      trueValue = trueValue();
+    }
+
+    return trueValue;
+  } else {
+    if (typeof falseValue === 'function') {
+      falseValue = falseValue();
+    }
+
+    return falseValue;
+  }
+};
+
+uiFactory.exec = function (func) {
+  for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    args[_key - 1] = arguments[_key];
+  }
+
+  return func.apply(void 0, args);
+};
+
+['a', 'abbr', 'address', 'area', 'article', 'aside', 'audio', 'b', 'base', 'bdi', 'bdo', 'blockquote', 'body', 'br', 'button', 'canvas', 'caption', 'cite', 'code', 'col', 'colgroup', 'data', 'datalist', 'dd', 'del', 'details', 'dfn', 'dialog', 'div', 'dl', 'dt', 'em', 'embed', 'fieldset', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hgroup', 'hr', 'html', 'i', 'iframe', 'img', 'input', 'ins', 'kbd', 'keygen', 'label', 'legend', 'li', 'link', 'main', 'map', 'mark', 'menu', 'menuitem', 'meta', 'meter', 'nav', 'noscript', 'object', 'ol', 'optgroup', 'option', 'output', 'p', 'param', 'pre', 'progress', 'q', 'rb', 'rp', 'rt', 'rtc', 'ruby', 's', 'samp', 'script', 'section', 'select', 'small', 'source', 'span', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'title', 'tr', 'track', 'u', 'ul', 'var', 'video', 'wbr'].forEach(function (tag) {
+  uiFactory[tag] = function (attributes, childElements, callback) {
+    return uiFactory(tag, attributes, childElements, callback);
+  };
+});
+
+uiFactory.svg = function (element, attributes, childElements, callback) {
+  if (typeof element === 'string') {
+    element = document.createElementNS('http://www.w3.org/2000/svg', element);
+  }
+
+  return uiFactory(element, attributes, childElements, callback);
+};
+
+['a', 'animate', 'animateMotion', 'animateTransform', 'circle', 'clipPath', 'color-profile', 'defs', 'desc', 'discard', 'ellipse', 'feBlend', 'feColorMatrix', 'feComponentTransfer', 'feComposite', 'feConvolveMatrix', 'feDiffuseLighting', 'feDisplacementMap', 'feDistantLight', 'feDropShadow', 'feFlood', 'feFuncA', 'feFuncB', 'feFuncG', 'feFuncR', 'feGaussianBlur', 'feImage', 'feMerge', 'feMergeNode', 'feMorphology', 'feOffset', 'fePointLight', 'feSpecularLighting', 'feSpotLight', 'feTile', 'feTurbulence', 'filter', 'foreignObject', 'g', 'hatch', 'hatchpath', 'image', 'line', 'linearGradient', 'marker', 'mask', 'mesh', 'meshgradient', 'meshpatch', 'meshrow', 'metadata', 'mpath', 'path', 'pattern', 'polygon', 'polyline', 'radialGradient', 'rect', 'script', 'set', 'solidcolor', 'stop', 'style', 'svg', 'switch', 'symbol', 'text', 'textPath', 'title', 'tspan', 'unknown', 'use', 'view'].forEach(function (tag) {
+  uiFactory.svg[tag] = function (attributes, childElements, callback) {
+    return uiFactory.svg(tag, attributes, childElements, callback);
+  };
+});
+/** Conveniece Object */
+
+if (!window.uif) {
+  window.uif = uiFactory;
 }
