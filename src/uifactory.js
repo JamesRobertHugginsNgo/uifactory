@@ -1,29 +1,40 @@
 /* exported uiFactory */
 /**
  * Creates HTML elements with additional functionalities.
- * @param {string|HTMLElement} element
- * @param {object|[object]} attributes
- * @param {HTMLElement|function|string|Text|object|[HTMLElement|function|string|Text|object]} childElements
+ * @param {*} element
+ * @param {*} attributes
+ * @param {*} childElements
  * @param {function} callback
- * @returns {HTMLElement}
+ * @returns {Element}
  */
 function uiFactory(element, attributes, childElements, callback) {
 
-	// Pass element name as string to create a new element.
-	if (typeof element === 'string') {
+	// Finalize element.
+	if (element instanceof Element) {
+		// Element already finalized. Do nothing.
+	} else if (typeof element === 'string') {
 		element = document.createElement(element);
+	} else if (Array.isArray(element)) {
+		const [namespaceURI = 'http://www.w3.org/1999/xhtml', qualifiedName, options] = element;
+		element = document.createElementNS(namespaceURI, qualifiedName, options);
+	} else if (typeof element === 'object' && element !== null) {
+		const { namespaceURI = 'http://www.w3.org/1999/xhtml', qualifiedName, options } = element;
+		element = document.createElementNS(namespaceURI, qualifiedName, options);
 	}
 
-	// Add essential properties and method.
+	// Add uiFactory properties and methods.
 	if (!element.definedByUiFactoryPropertyDescriptors) {
 		Object.defineProperties(element, uiFactory.propertyDescriptors);
 	}
 
-	// Add values to essential properties.
-	element.uiFactoryAttributes = attributes;
-	element.uiFactoryChildElements = childElements;
+	// Set "attributes" property.
+	// element.uiFactoryAttributes = attributes;
+	if (attributes) {
+		element.uifSetAttributes(attributes);
+	}
 
-	// Prepend existing child elements to property, otherwise it will be removed on the next render.
+	// Set "child elements" property.
+	element.uiFactoryChildElements = childElements;
 	const originalChildElements = [...element.childNodes].map((childNode) => childNode instanceof HTMLElement ? uiFactory(childNode) : childNode);
 	if (originalChildElements.length > 0) {
 		element.uiFactoryChildElements = element.uiFactoryChildElements
