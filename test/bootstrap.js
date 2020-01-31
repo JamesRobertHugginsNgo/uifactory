@@ -1,11 +1,11 @@
-/* global uiFactory */
+/* global uiFactory_PropertyDescriptors uiFactory */
 
 /* exported uifBootstrap */
 function uifBootstrap(element, onRenderAttributes, onRenderChildElements) {
 	if (onRenderAttributes) {
 		onRenderAttributes(element);
 		element.renderAttributes = function (attributes, callback) {
-			return uiFactory.propertyDescriptors.renderAttributes.value.call(this, attributes, () => {
+			return uiFactory_PropertyDescriptors.renderAttributes.value.call(this, attributes, () => {
 				onRenderAttributes(element);
 				callback && callback(this);
 			});
@@ -15,7 +15,7 @@ function uifBootstrap(element, onRenderAttributes, onRenderChildElements) {
 	if (onRenderChildElements) {
 		onRenderChildElements(element);
 		element.renderChildElements = function (childElements, callback, reRender) {
-			return uiFactory.propertyDescriptors.renderChildElements.value.call(this, childElements, () => {
+			return uiFactory_PropertyDescriptors.renderChildElements.value.call(this, childElements, () => {
 				onRenderChildElements(element);
 				callback && callback(this);
 			}, reRender);

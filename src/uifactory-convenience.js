@@ -1,10 +1,6 @@
 /* global uiFactory_PropertyDescriptors uiFactory */
 
-uiFactory_PropertyDescriptors.cbk = {
-	value(...args) {
-		return this.callback(...args);
-	}
-};
+
 
 uiFactory_PropertyDescriptors.attrs = {
 	value(...args) {
@@ -12,9 +8,15 @@ uiFactory_PropertyDescriptors.attrs = {
 	}
 };
 
-uiFactory_PropertyDescriptors.cEls = {
+uiFactory_PropertyDescriptors.els = {
 	value(...args) {
 		return this.renderChildElements(...args);
+	}
+};
+
+uiFactory_PropertyDescriptors.cbk = {
+	value(...args) {
+		return this.callback(...args);
 	}
 };
 
