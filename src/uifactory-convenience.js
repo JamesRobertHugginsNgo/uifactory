@@ -1,7 +1,5 @@
 /* global uiFactory_PropertyDescriptors uiFactory */
 
-
-
 uiFactory_PropertyDescriptors.attrs = {
 	value(...args) {
 		return this.renderAttributes(...args);
