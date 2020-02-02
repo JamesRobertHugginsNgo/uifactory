@@ -1,9 +1,6 @@
 const uiFactory_PropertyDescriptors = {
 	definedByUiFactoryPropertyDescriptors: { value: true },
 
-	attributesData: { writable: true },
-	childElementsData: { writable: true },
-
 	callback: {
 		value(callback) {
 			callback && callback(this);
@@ -12,8 +9,10 @@ const uiFactory_PropertyDescriptors = {
 		writable: true
 	},
 
+	attributesData: { writable: true },
+
 	renderAttributes: {
-		value(attributes, callback) {
+		value(attributes = this.attributesData, callback) {
 			this.attributesData = attributes;
 
 			const renderLoop = (value, name, attributes) => {
@@ -82,8 +81,10 @@ const uiFactory_PropertyDescriptors = {
 		writable: true
 	},
 
+	childElementsData: { writable: true },
+
 	renderChildElements: {
-		value(childElements, callback, reRender = false) {
+		value(childElements = this.childElementsData, callback, reRender = false) {
 			this.childElementsData = childElements;
 
 			const renderLoop = (element, placeholder = this.appendChild(document.createTextNode(''))) => {

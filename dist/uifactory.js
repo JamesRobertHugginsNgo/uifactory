@@ -14,12 +14,6 @@ var uiFactory_PropertyDescriptors = {
   definedByUiFactoryPropertyDescriptors: {
     value: true
   },
-  attributesData: {
-    writable: true
-  },
-  childElementsData: {
-    writable: true
-  },
   callback: {
     value: function value(callback) {
       callback && callback(this);
@@ -27,10 +21,15 @@ var uiFactory_PropertyDescriptors = {
     },
     writable: true
   },
+  attributesData: {
+    writable: true
+  },
   renderAttributes: {
-    value: function value(attributes, callback) {
+    value: function value() {
       var _this = this;
 
+      var attributes = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.attributesData;
+      var callback = arguments.length > 1 ? arguments[1] : undefined;
       this.attributesData = attributes;
 
       var renderLoop = function renderLoop(value, name, attributes) {
@@ -108,10 +107,15 @@ var uiFactory_PropertyDescriptors = {
     },
     writable: true
   },
+  childElementsData: {
+    writable: true
+  },
   renderChildElements: {
-    value: function value(childElements, callback) {
+    value: function value() {
       var _this2 = this;
 
+      var childElements = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.childElementsData;
+      var callback = arguments.length > 1 ? arguments[1] : undefined;
       var reRender = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
       this.childElementsData = childElements;
 
