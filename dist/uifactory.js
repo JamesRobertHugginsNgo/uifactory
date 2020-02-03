@@ -8,11 +8,11 @@ function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.
 
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/* exported uiFactoryPropertyDescriptor */
-var uiFactoryPropertyDescriptor = {
-  definedByUiFactoryPropertyDescriptor: {
+/* exported uiFactoryPropertyDescriptors */
+var uiFactoryPropertyDescriptors = {
+  definedByUiFactoryPropertyDescriptors: {
     value: true
   },
   // Callback
@@ -154,7 +154,7 @@ var uiFactoryPropertyDescriptor = {
     },
     writable: true
   },
-  // contents
+  // Contents
   _contents: {
     writable: true
   },
@@ -163,7 +163,12 @@ var uiFactoryPropertyDescriptor = {
       var _this3 = this;
 
       var callRenderOncontents = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
-      this._contents = contents; // Render
+      this._contents = contents;
+
+      while (this.firstChild) {
+        this.removeChild(this.firstChild);
+      } // Render
+
 
       var render = function render(item) {
         var placeholder = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _this3.appendChild(document.createTextNode(''));
@@ -222,8 +227,8 @@ var uiFactoryPropertyDescriptor = {
         _this3.removeChild(placeholder); // Render item
 
 
-        if (item instanceof Element && item.definedByUiFactoryPropertyDescriptors) {
-          return callRenderOncontents && item.render();
+        if (item instanceof Element && item.definedByUiFactoryPropertyDescriptors && callRenderOncontents) {
+          return item.render();
         }
       };
 
@@ -293,8 +298,8 @@ function uiFactory() {
 
   if (element instanceof Element) {
     // Define properties
-    if (!element.definedByUiFactoryPropertyDescriptor) {
-      element = Object.defineProperties(element, uiFactoryPropertyDescriptor);
+    if (!element.definedByUiFactoryPropertyDescriptors) {
+      element = Object.defineProperties(element, uiFactoryPropertyDescriptors);
     } // Add initial content - for rerendering
 
 

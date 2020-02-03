@@ -1,6 +1,6 @@
-/* exported uiFactoryPropertyDescriptor */
-const uiFactoryPropertyDescriptor = {
-	definedByUiFactoryPropertyDescriptor: { value: true },
+/* exported uiFactoryPropertyDescriptors */
+const uiFactoryPropertyDescriptors = {
+	definedByUiFactoryPropertyDescriptors: { value: true },
 
 	// Callback
 	callback: {
@@ -103,6 +103,7 @@ const uiFactoryPropertyDescriptor = {
 					}
 				}
 			};
+
 			const result = render(this._properties);
 
 			// Callback
@@ -122,11 +123,15 @@ const uiFactoryPropertyDescriptor = {
 		writable: true
 	},
 
-	// contents
+	// Contents
 	_contents: { writable: true },
 	contents: {
 		value(contents, callback, callRenderOncontents = false) {
 			this._contents = contents;
+
+			while(this.firstChild) {
+				this.removeChild(this.firstChild);
+			}
 
 			// Render
 			const render = (item, placeholder = this.appendChild(document.createTextNode(''))) => {
@@ -177,8 +182,8 @@ const uiFactoryPropertyDescriptor = {
 				this.removeChild(placeholder);
 
 				// Render item
-				if (item instanceof Element && item.definedByUiFactoryPropertyDescriptors) {
-					return callRenderOncontents && item.render();
+				if (item instanceof Element && item.definedByUiFactoryPropertyDescriptors && callRenderOncontents) {
+					return item.render();
 				}
 			};
 			const result = render(this._contents);
@@ -244,8 +249,8 @@ function uiFactory(...args) {
 	if (element instanceof Element) {
 
 		// Define properties
-		if (!element.definedByUiFactoryPropertyDescriptor) {
-			element = Object.defineProperties(element, uiFactoryPropertyDescriptor);
+		if (!element.definedByUiFactoryPropertyDescriptors) {
+			element = Object.defineProperties(element, uiFactoryPropertyDescriptors);
 		}
 
 		// Add initial content - for rerendering
