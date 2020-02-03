@@ -129,7 +129,7 @@ const uiFactoryPropertyDescriptors = {
 		value(contents, callback, callRenderOncontents = false) {
 			this._contents = contents;
 
-			while(this.firstChild) {
+			while (this.firstChild) {
 				this.removeChild(this.firstChild);
 			}
 
@@ -271,7 +271,9 @@ function uiFactory(...args) {
 	'ol', 'optgroup', 'option', 'output', 'p', 'param', 'pre', 'progress', 'q', 'rb', 'rp', 'rt', 'rtc', 'ruby', 's',
 	'samp', 'script', 'section', 'select', 'small', 'source', 'span', 'strong', 'style', 'sub', 'summary', 'sup', 'table',
 	'tbody', 'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'title', 'tr', 'track', 'u', 'ul', 'var',
-	'video', 'wbr'].forEach((tag) => uiFactory[tag] = (callback) => uiFactory(tag).callback(callback));
+	'video', 'wbr'].forEach((tag) => uiFactory[tag] = function (callback) {
+		return uiFactory(tag).callback(callback);
+	});
 
 uiFactory.svg = () => uif('http://www.w3.org/2000/svg', 'svg');
 ['a', 'animate', 'animateMotion', 'animateTransform', 'circle', 'clipPath', 'color-profile', 'defs', 'desc', 'discard',
@@ -282,7 +284,9 @@ uiFactory.svg = () => uif('http://www.w3.org/2000/svg', 'svg');
 	'image', 'line', 'linearGradient', 'marker', 'mask', 'mesh', 'meshgradient', 'meshpatch', 'meshrow', 'metadata',
 	'mpath', 'path', 'pattern', 'polygon', 'polyline', 'radialGradient', 'rect', 'script', 'set', 'solidcolor', 'stop',
 	'style', 'switch', 'symbol', 'text', 'textPath', 'title', 'tspan', 'unknown', 'use', 'view']
-	.forEach((tag) => uiFactory.svg[tag] = (callback) => uiFactory('http://www.w3.org/2000/svg', tag).callback(callback));
+	.forEach((tag) => uiFactory.svg[tag] = function (callback) {
+		return uiFactory('http://www.w3.org/2000/svg', tag).callback(callback);
+	});
 
 /* exported uif */
 let uif = uif || uiFactory;
