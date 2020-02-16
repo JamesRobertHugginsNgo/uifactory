@@ -1,17 +1,70 @@
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// UI FACTORY
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/* exported uiFactory */
+function uiFactory(...args) {
+	let element;
+
+	// Branch - based on args pattern
+	// A. [string, string, !function?, ...]
+	if (typeof args[0] === 'string' && typeof args[1] === 'string') {
+		let namespaceURI, qualifiedName, options;
+		[namespaceURI, qualifiedName, ...args] = args;
+		if (typeof args[0] !== 'function') {
+			[options, ...args] = args;
+		}
+		element = document.createElementNS(namespaceURI, qualifiedName, options);
+	}
+	// B. [string, !function?, ...]
+	else if (typeof args[0] === 'string') {
+		let tagName, options;
+		[tagName, ...args] = args;
+		if (typeof args[0] !== 'function') {
+			[options, ...args] = args;
+		}
+		element = document.createElement(tagName, options);
+	}
+	// C. [Element, function?]
+	else if (args[0] instanceof Element) {
+		[element, ...args] = args;
+	}
+
+	if (element instanceof Element) {
+		if (!element.definedBy__uiFactory__propertyDescriptors) {
+			element = Object.defineProperties(element, uiFactory__propertyDescriptors);
+		}
+
+		// Add initial contents
+		if (element.childNodes.length > 0) {
+			element.contents(...element.childNodes);
+		}
+	}
+
+	// Return element and start method chaining
+	return element.callback(args[0]);
+}
+
+/* exported uif */
+let uif = uif || uiFactory;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// PROPERTY DESCRIPTOR
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /* exported uiFactoryPropertyDescriptors */
-const uiFactoryPropertyDescriptors = {
-	definedByUiFactoryPropertyDescriptors: { value: true },
+const uiFactory__propertyDescriptors = {
+	definedBy__uiFactory__propertyDescriptors: {
+		value: true
+	},
 
 	// Callback
 	callback: {
 		value(callback) {
-
-			// Callback
 			if (typeof callback === 'function') {
 				callback(this);
 			}
 
-			// Allow method chaining
 			return this;
 		},
 		writable: true
@@ -30,44 +83,40 @@ const uiFactoryPropertyDescriptors = {
 				}
 			}
 
-			if (typeof callback === 'function') {
-				callback(this);
-			}
-
-			// Allow method chaining
-			return this;
+			return this.callback(callback);
 		},
 		writable: true
 	},
 
 	// Properties
-	_properties: { writable: true },
+	_properties: {
+		writable: true
+	},
 	properties: {
 		value(properties = this._properties, callback) {
 			this._properties = properties;
 
-			// Render
-			const render = (propertyValue, propertyName, properties) => {
+			// Define attributes render function
+			const renderAttributes = (propertyValue, propertyName, properties) => {
 
-				// propertyValue = Promise
+				// Branch - based on value type
+				// A. Promise
 				if (propertyValue instanceof Promise) {
 					return propertyValue.then((value) => {
-						return render(value, propertyName);
+						return renderAttributes(value, propertyName);
 					});
 				}
-
-				// propertyValue = function
+				// B. function
 				if (typeof propertyValue === 'function') {
-					return render(propertyValue.call(this, this), propertyName);
+					return renderAttributes(propertyValue.call(this, this), propertyName);
 				}
-
-				// propertyValue = array
+				// C. array
 				if (Array.isArray(propertyValue)) {
 					const tempProperties = {};
 					const promises = propertyValue
 						.map((value, index) => {
 							tempProperties[index] = true;
-							return render(value, index, tempProperties);
+							return renderAttributes(value, index, tempProperties);
 						})
 						.filter((promise) => promise instanceof Promise);
 					if (properties && propertyName && Object.keys(tempProperties).length === 0) {
@@ -76,12 +125,12 @@ const uiFactoryPropertyDescriptors = {
 					if (promises.length > 0) {
 						return Promise.all(promises);
 					}
+					return;
 				}
-
-				// propertyValue = object
+				// D. object
 				if (typeof propertyValue === 'object' && propertyValue !== null) {
 					const promises = Object.keys(propertyValue)
-						.map((key) => render(propertyValue[key], key, propertyValue))
+						.map((key) => renderAttributes(propertyValue[key], key, propertyValue))
 						.filter((promise) => promise instanceof Promise);
 					if (properties && propertyName && Object.keys(propertyValue).length === 0) {
 						delete properties[propertyName];
@@ -89,9 +138,9 @@ const uiFactoryPropertyDescriptors = {
 					if (promises.length > 0) {
 						return Promise.all(promises);
 					}
+					return;
 				}
-
-				// propertyName & propertyValue = !null
+				// E. otherwise
 				if (propertyName) {
 					if (propertyValue == null) {
 						this.removeAttribute(propertyName);
@@ -104,102 +153,95 @@ const uiFactoryPropertyDescriptors = {
 				}
 			};
 
-			const result = render(this._properties);
-
-			// Callback
-			if (typeof callback === 'function') {
-				if (result instanceof Promise) {
-					result.then(() => {
-						callback(this);
-					});
-				} else {
-					callback(this);
-				}
+			// Render attributes
+			const result = renderAttributes(this._properties);
+			if (result instanceof Promise) {
+				result.then(() => {
+					this.callback(callback);
+				});
+			} else {
+				this.callback(callback);
 			}
 
-			// Allow method chaining
 			return this;
 		},
 		writable: true
 	},
 
 	// Contents
-	_contents: { writable: true },
+	_contents: {
+		writable: true
+	},
 	contents: {
-		value(contents, callback, callRenderOncontents = false) {
+		value(contents = this._contents, callback, callRenderOnContents = false) {
 			this._contents = contents;
 
+			// Empty contents
 			while (this.firstChild) {
 				this.removeChild(this.firstChild);
 			}
 
-			// Render
-			const render = (item, placeholder = this.appendChild(document.createTextNode(''))) => {
+			// Define contents render function
+			const renderContents = (item, placeholder = this.appendChild(document.createTextNode(''))) => {
 
-				// item = Promise
+				// Branch - based on item type
+				// A. Promise
 				if (item instanceof Promise) {
 					return item.then((value) => {
-						return render(value, placeholder);
+						return renderContents(value, placeholder);
 					});
 				}
-
-				// item = function
+				// B. function
 				if (typeof item === 'function') {
-					return render(item(this), placeholder);
+					return renderContents(item(this), placeholder);
 				}
-
-				// item = array
+				// C. array
 				if (Array.isArray(item)) {
 					const promises = item
-						.map((value) => render(value, this.insertBefore(document.createTextNode(''), placeholder)))
+						.map((value) => renderContents(value, this.insertBefore(document.createTextNode(''), placeholder)))
 						.filter((promise) => promise instanceof Promise);
 					this.removeChild(placeholder);
-					return promises.length > 0 && Promise.all(promises);
+					if (promises.length > 0) {
+						return Promise.all(promises);
+					}
+					return;
 				}
-
-				// item = object
+				// D. object
 				if (typeof item === 'object' && item !== null && !(item instanceof Element) && !(item instanceof Text)) {
 					const promises = Object.keys(item)
-						.map((key) => render(item[key], this.insertBefore(document.createTextNode(''), placeholder)))
+						.map((key) => renderContents(item[key], this.insertBefore(document.createTextNode(''), placeholder)))
 						.filter((promise) => promise instanceof Promise);
 					this.removeChild(placeholder);
-					return promises.length > 0 && Promise.all(promises);
+					if (promises.length > 0) {
+						return Promise.all(promises);
+					}
+					return;
 				}
-
-				// item = boolean/number/string
+				// E. boolean/number/string
 				if (typeof item === 'boolean' || typeof item === 'number' || typeof item === 'string') {
 					const wrapper = document.createElement('div');
 					wrapper.innerHTML = String(item);
-					return render([...wrapper.childNodes], placeholder);
+					return renderContents([...wrapper.childNodes], placeholder);
 				}
-
-				// item = Element|Text
+				// F. Otherwise
 				if (item instanceof Element || item instanceof Text) {
 					this.insertBefore(item, placeholder);
 				}
-
-				// Remove placeholder
 				this.removeChild(placeholder);
-
-				// Render item
-				if (item instanceof Element && item.definedByUiFactoryPropertyDescriptors && callRenderOncontents) {
+				if (item instanceof Element && item.definedBy__uiFactory__propertyDescriptors && callRenderOnContents) {
 					return item.render();
 				}
 			};
-			const result = render(this._contents);
 
-			// Callback
-			if (typeof callback === 'function') {
-				if (result instanceof Promise) {
-					result.then(() => {
-						callback(this);
-					});
-				} else {
-					callback(this);
-				}
+			const result = renderContents(this._contents);
+			if (result instanceof Promise) {
+				result.then(() => {
+					this.callback(callback);
+				});
+			} else {
+				this.callback(callback);
 			}
 
-			// Allow method chaining
 			return this;
 		},
 		writable: true
@@ -213,55 +255,19 @@ const uiFactoryPropertyDescriptors = {
 				new Promise((resolve) => this.contents(this._contents, resolve, true))
 			];
 
-			// Callback
-			if (typeof callback === 'function') {
-				Promise.all(promises).then(() => {
-					callback(this);
-				});
-			}
+			Promise.all(promises).then(() => {
+				this.callback(callback);
+			});
 
-			// Allow method chaining
 			return this;
 		},
 		writable: true
 	}
 };
 
-/* exported uiFactory */
-function uiFactory(...args) {
-	let element;
-
-	// args = [string, string, object?]
-	if (typeof args[0] === 'string' && typeof args[1] === 'string') {
-		const [namespaceURI, qualifiedName, options] = args;
-		element = document.createElementNS(namespaceURI, qualifiedName, options);
-	}
-	// args = [string, object?]
-	else if (typeof args[0] === 'string') {
-		const [tagName, options] = args;
-		element = document.createElement(tagName, options);
-	}
-	// args = [Element]
-	else if (args[0] instanceof Element) {
-		[element] = args;
-	}
-
-	if (element instanceof Element) {
-
-		// Define properties
-		if (!element.definedByUiFactoryPropertyDescriptors) {
-			element = Object.defineProperties(element, uiFactoryPropertyDescriptors);
-		}
-
-		// Add initial content - for rerendering
-		if (element.childNodes.length > 0) {
-			element.contents(...element.childNodes);
-		}
-	}
-
-	// Return element and start method chaining
-	return element;
-}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ALIAS FUNCTIONS
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ['a', 'abbr', 'address', 'area', 'article', 'aside', 'audio', 'b', 'base', 'bdi', 'bdo', 'blockquote', 'body', 'br',
 	'button', 'canvas', 'caption', 'cite', 'code', 'col', 'colgroup', 'data', 'datalist', 'dd', 'del', 'details', 'dfn',
@@ -272,7 +278,7 @@ function uiFactory(...args) {
 	'samp', 'script', 'section', 'select', 'small', 'source', 'span', 'strong', 'style', 'sub', 'summary', 'sup', 'table',
 	'tbody', 'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'title', 'tr', 'track', 'u', 'ul', 'var',
 	'video', 'wbr'].forEach((tag) => uiFactory[tag] = function (callback) {
-		return uiFactory(tag).callback(callback);
+		return uiFactory(tag, callback);
 	});
 
 uiFactory.svg = () => uif('http://www.w3.org/2000/svg', 'svg');
@@ -285,8 +291,89 @@ uiFactory.svg = () => uif('http://www.w3.org/2000/svg', 'svg');
 	'mpath', 'path', 'pattern', 'polygon', 'polyline', 'radialGradient', 'rect', 'script', 'set', 'solidcolor', 'stop',
 	'style', 'switch', 'symbol', 'text', 'textPath', 'title', 'tspan', 'unknown', 'use', 'view']
 	.forEach((tag) => uiFactory.svg[tag] = function (callback) {
-		return uiFactory('http://www.w3.org/2000/svg', tag).callback(callback);
+		return uiFactory('http://www.w3.org/2000/svg', tag, callback);
 	});
 
-/* exported uif */
-let uif = uif || uiFactory;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CUSTOMIZE UI FACTORY
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/* exported uiFactory__customize */
+function uiFactory__customize(element, ...args) {
+	let types, callback;
+
+	// element = uiFactory(element);
+
+	// Assign arguments to variables
+	// - [element, ...]
+	if (args[0] instanceof Element) {
+		[element, ...args] = args;
+	}
+	// - [!function, ...]
+	if (typeof args[0] !== 'function') {
+		[types, ...args] = args;
+		if (types !== undefined && !Array.isArray(types)) {
+			types = [types];
+		}
+	}
+	// - [function, ...]
+	if (typeof args[0] === 'function') {
+		[callback, ...args] = args;
+	}
+
+	element = uiFactory(element);
+
+	function setBeforeProperties(beforeProperties) {
+		beforeProperties(true);
+		element.properties = (function (originalProperties) {
+			return function (properties, callback) {
+				beforeProperties(false);
+				return originalProperties.call(this, properties, callback);
+			};
+		})(element.properties);
+	}
+
+	function setAfterProperties(afterProperties) {
+		afterProperties(true);
+		element.properties = (function (originalProperties) {
+			return function (properties, callback) {
+				return originalProperties.call(this, properties, function (element) {
+					afterProperties(false);
+					if (typeof callback === 'function') {
+						return callback.call(this, element);
+					}
+				});
+			};
+		})(element.properties);
+	}
+
+	function setBeforeContents(beforeContents) {
+		beforeContents(true);
+		element.contents = (function (originalContents) {
+			return function (contents, callback, callRenderOnContents) {
+				beforeContents(false);
+				return originalContents.call(this, contents, callback, callRenderOnContents);
+			};
+		})(element.contents);
+	}
+
+	function setAfterContents(afterContents) {
+		afterContents(true);
+		element.contents = (function (originalContents) {
+			return function (contents, callback, callRenderOnContents) {
+				return originalContents.call(this, contents, function (element) {
+					afterContents(false);
+					if (typeof callback === 'function') {
+						return callback.call(this, element);
+					}
+				}, callRenderOnContents);
+			};
+		})(element.contents);
+	}
+
+	return {
+		element, types, callback,
+		setBeforeProperties, setAfterProperties,
+		setBeforeContents, setAfterContents
+	};
+}

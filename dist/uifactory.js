@@ -1,28 +1,120 @@
 "use strict";
 
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
 
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
 
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
-
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
 
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _toArray(arr) { return _arrayWithHoles(arr) || _iterableToArray(arr) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// UI FACTORY
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/* exported uiFactory */
+function uiFactory() {
+  for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+    args[_key] = arguments[_key];
+  }
+
+  var element; // Branch - based on args pattern
+  // A. [string, string, !function?, ...]
+
+  if (typeof args[0] === 'string' && typeof args[1] === 'string') {
+    var namespaceURI, qualifiedName, options;
+    var _args = args;
+
+    var _args2 = _toArray(_args);
+
+    namespaceURI = _args2[0];
+    qualifiedName = _args2[1];
+    args = _args2.slice(2);
+
+    if (typeof args[0] !== 'function') {
+      var _args3 = args;
+
+      var _args4 = _toArray(_args3);
+
+      options = _args4[0];
+      args = _args4.slice(1);
+    }
+
+    element = document.createElementNS(namespaceURI, qualifiedName, options);
+  } // B. [string, !function?, ...]
+  else if (typeof args[0] === 'string') {
+      var tagName, _options;
+
+      var _args5 = args;
+
+      var _args6 = _toArray(_args5);
+
+      tagName = _args6[0];
+      args = _args6.slice(1);
+
+      if (typeof args[0] !== 'function') {
+        var _args7 = args;
+
+        var _args8 = _toArray(_args7);
+
+        _options = _args8[0];
+        args = _args8.slice(1);
+      }
+
+      element = document.createElement(tagName, _options);
+    } // C. [Element, function?]
+    else if (args[0] instanceof Element) {
+        var _args9 = args;
+
+        var _args10 = _toArray(_args9);
+
+        element = _args10[0];
+        args = _args10.slice(1);
+      }
+
+  if (element instanceof Element) {
+    if (!element.definedBy__uiFactory__propertyDescriptors) {
+      element = Object.defineProperties(element, uiFactory__propertyDescriptors);
+    } // Add initial contents
+
+
+    if (element.childNodes.length > 0) {
+      var _element;
+
+      (_element = element).contents.apply(_element, _toConsumableArray(element.childNodes));
+    }
+  } // Return element and start method chaining
+
+
+  return element.callback(args[0]);
+}
+/* exported uif */
+
+
+var uif = uif || uiFactory; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// PROPERTY DESCRIPTOR
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /* exported uiFactoryPropertyDescriptors */
-var uiFactoryPropertyDescriptors = {
-  definedByUiFactoryPropertyDescriptors: {
+
+var uiFactory__propertyDescriptors = {
+  definedBy__uiFactory__propertyDescriptors: {
     value: true
   },
   // Callback
   callback: {
     value: function value(callback) {
-      // Callback
       if (typeof callback === 'function') {
         callback(this);
-      } // Allow method chaining
-
+      }
 
       return this;
     },
@@ -39,8 +131,8 @@ var uiFactoryPropertyDescriptors = {
             _this.addEventListener(type, function () {
               var _events$type;
 
-              for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-                args[_key] = arguments[_key];
+              for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+                args[_key2] = arguments[_key2];
               }
 
               (_events$type = events[type]).call.apply(_events$type, [this].concat(args, [this]));
@@ -53,12 +145,7 @@ var uiFactoryPropertyDescriptors = {
         }
       }
 
-      if (typeof callback === 'function') {
-        callback(this);
-      } // Allow method chaining
-
-
-      return this;
+      return this.callback(callback);
     },
     writable: true
   },
@@ -72,27 +159,28 @@ var uiFactoryPropertyDescriptors = {
 
       var properties = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this._properties;
       var callback = arguments.length > 1 ? arguments[1] : undefined;
-      this._properties = properties; // Render
+      this._properties = properties; // Define attributes render function
 
-      var render = function render(propertyValue, propertyName, properties) {
-        // propertyValue = Promise
+      var renderAttributes = function renderAttributes(propertyValue, propertyName, properties) {
+        // Branch - based on value type
+        // A. Promise
         if (propertyValue instanceof Promise) {
           return propertyValue.then(function (value) {
-            return render(value, propertyName);
+            return renderAttributes(value, propertyName);
           });
-        } // propertyValue = function
+        } // B. function
 
 
         if (typeof propertyValue === 'function') {
-          return render(propertyValue.call(_this2, _this2), propertyName);
-        } // propertyValue = array
+          return renderAttributes(propertyValue.call(_this2, _this2), propertyName);
+        } // C. array
 
 
         if (Array.isArray(propertyValue)) {
           var tempProperties = {};
           var promises = propertyValue.map(function (value, index) {
             tempProperties[index] = true;
-            return render(value, index, tempProperties);
+            return renderAttributes(value, index, tempProperties);
           }).filter(function (promise) {
             return promise instanceof Promise;
           });
@@ -104,12 +192,14 @@ var uiFactoryPropertyDescriptors = {
           if (promises.length > 0) {
             return Promise.all(promises);
           }
-        } // propertyValue = object
+
+          return;
+        } // D. object
 
 
         if (_typeof(propertyValue) === 'object' && propertyValue !== null) {
           var _promises = Object.keys(propertyValue).map(function (key) {
-            return render(propertyValue[key], key, propertyValue);
+            return renderAttributes(propertyValue[key], key, propertyValue);
           }).filter(function (promise) {
             return promise instanceof Promise;
           });
@@ -121,7 +211,9 @@ var uiFactoryPropertyDescriptors = {
           if (_promises.length > 0) {
             return Promise.all(_promises);
           }
-        } // propertyName & propertyValue = !null
+
+          return;
+        } // E. otherwise
 
 
         if (propertyName) {
@@ -135,20 +227,18 @@ var uiFactoryPropertyDescriptors = {
             delete properties[propertyName];
           }
         }
-      };
+      }; // Render attributes
 
-      var result = render(this._properties); // Callback
 
-      if (typeof callback === 'function') {
-        if (result instanceof Promise) {
-          result.then(function () {
-            callback(_this2);
-          });
-        } else {
-          callback(this);
-        }
-      } // Allow method chaining
+      var result = renderAttributes(this._properties);
 
+      if (result instanceof Promise) {
+        result.then(function () {
+          _this2.callback(callback);
+        });
+      } else {
+        this.callback(callback);
+      }
 
       return this;
     },
@@ -159,91 +249,97 @@ var uiFactoryPropertyDescriptors = {
     writable: true
   },
   contents: {
-    value: function value(contents, callback) {
+    value: function value() {
       var _this3 = this;
 
-      var callRenderOncontents = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
-      this._contents = contents;
+      var contents = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this._contents;
+      var callback = arguments.length > 1 ? arguments[1] : undefined;
+      var callRenderOnContents = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+      this._contents = contents; // Empty contents
 
       while (this.firstChild) {
         this.removeChild(this.firstChild);
-      } // Render
+      } // Define contents render function
 
 
-      var render = function render(item) {
+      var renderContents = function renderContents(item) {
         var placeholder = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _this3.appendChild(document.createTextNode(''));
 
-        // item = Promise
+        // Branch - based on item type
+        // A. Promise
         if (item instanceof Promise) {
           return item.then(function (value) {
-            return render(value, placeholder);
+            return renderContents(value, placeholder);
           });
-        } // item = function
+        } // B. function
 
 
         if (typeof item === 'function') {
-          return render(item(_this3), placeholder);
-        } // item = array
+          return renderContents(item(_this3), placeholder);
+        } // C. array
 
 
         if (Array.isArray(item)) {
           var promises = item.map(function (value) {
-            return render(value, _this3.insertBefore(document.createTextNode(''), placeholder));
+            return renderContents(value, _this3.insertBefore(document.createTextNode(''), placeholder));
           }).filter(function (promise) {
             return promise instanceof Promise;
           });
 
           _this3.removeChild(placeholder);
 
-          return promises.length > 0 && Promise.all(promises);
-        } // item = object
+          if (promises.length > 0) {
+            return Promise.all(promises);
+          }
+
+          return;
+        } // D. object
 
 
         if (_typeof(item) === 'object' && item !== null && !(item instanceof Element) && !(item instanceof Text)) {
           var _promises2 = Object.keys(item).map(function (key) {
-            return render(item[key], _this3.insertBefore(document.createTextNode(''), placeholder));
+            return renderContents(item[key], _this3.insertBefore(document.createTextNode(''), placeholder));
           }).filter(function (promise) {
             return promise instanceof Promise;
           });
 
           _this3.removeChild(placeholder);
 
-          return _promises2.length > 0 && Promise.all(_promises2);
-        } // item = boolean/number/string
+          if (_promises2.length > 0) {
+            return Promise.all(_promises2);
+          }
+
+          return;
+        } // E. boolean/number/string
 
 
         if (typeof item === 'boolean' || typeof item === 'number' || typeof item === 'string') {
           var wrapper = document.createElement('div');
           wrapper.innerHTML = String(item);
-          return render(_toConsumableArray(wrapper.childNodes), placeholder);
-        } // item = Element|Text
+          return renderContents(_toConsumableArray(wrapper.childNodes), placeholder);
+        } // F. Otherwise
 
 
         if (item instanceof Element || item instanceof Text) {
           _this3.insertBefore(item, placeholder);
-        } // Remove placeholder
+        }
 
+        _this3.removeChild(placeholder);
 
-        _this3.removeChild(placeholder); // Render item
-
-
-        if (item instanceof Element && item.definedByUiFactoryPropertyDescriptors && callRenderOncontents) {
+        if (item instanceof Element && item.definedBy__uiFactory__propertyDescriptors && callRenderOnContents) {
           return item.render();
         }
       };
 
-      var result = render(this._contents); // Callback
+      var result = renderContents(this._contents);
 
-      if (typeof callback === 'function') {
-        if (result instanceof Promise) {
-          result.then(function () {
-            callback(_this3);
-          });
-        } else {
-          callback(this);
-        }
-      } // Allow method chaining
-
+      if (result instanceof Promise) {
+        result.then(function () {
+          _this3.callback(callback);
+        });
+      } else {
+        this.callback(callback);
+      }
 
       return this;
     },
@@ -258,65 +354,21 @@ var uiFactoryPropertyDescriptors = {
         return _this4.properties(_this4._properties, resolve);
       }), new Promise(function (resolve) {
         return _this4.contents(_this4._contents, resolve, true);
-      })]; // Callback
-
-      if (typeof callback === 'function') {
-        Promise.all(promises).then(function () {
-          callback(_this4);
-        });
-      } // Allow method chaining
-
-
+      })];
+      Promise.all(promises).then(function () {
+        _this4.callback(callback);
+      });
       return this;
     },
     writable: true
   }
-};
-/* exported uiFactory */
-
-function uiFactory() {
-  var element; // args = [string, string, object?]
-
-  for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-    args[_key2] = arguments[_key2];
-  }
-
-  if (typeof args[0] === 'string' && typeof args[1] === 'string') {
-    var namespaceURI = args[0],
-        qualifiedName = args[1],
-        options = args[2];
-    element = document.createElementNS(namespaceURI, qualifiedName, options);
-  } // args = [string, object?]
-  else if (typeof args[0] === 'string') {
-      var tagName = args[0],
-          _options = args[1];
-      element = document.createElement(tagName, _options);
-    } // args = [Element]
-    else if (args[0] instanceof Element) {
-        element = args[0];
-      }
-
-  if (element instanceof Element) {
-    // Define properties
-    if (!element.definedByUiFactoryPropertyDescriptors) {
-      element = Object.defineProperties(element, uiFactoryPropertyDescriptors);
-    } // Add initial content - for rerendering
-
-
-    if (element.childNodes.length > 0) {
-      var _element;
-
-      (_element = element).contents.apply(_element, _toConsumableArray(element.childNodes));
-    }
-  } // Return element and start method chaining
-
-
-  return element;
-}
+}; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ALIAS FUNCTIONS
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ['a', 'abbr', 'address', 'area', 'article', 'aside', 'audio', 'b', 'base', 'bdi', 'bdo', 'blockquote', 'body', 'br', 'button', 'canvas', 'caption', 'cite', 'code', 'col', 'colgroup', 'data', 'datalist', 'dd', 'del', 'details', 'dfn', 'dialog', 'div', 'dl', 'dt', 'em', 'embed', 'fieldset', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hgroup', 'hr', 'html', 'i', 'iframe', 'img', 'input', 'ins', 'kbd', 'keygen', 'label', 'legend', 'li', 'link', 'main', 'map', 'mark', 'menu', 'menuitem', 'meta', 'meter', 'nav', 'noscript', 'object', 'ol', 'optgroup', 'option', 'output', 'p', 'param', 'pre', 'progress', 'q', 'rb', 'rp', 'rt', 'rtc', 'ruby', 's', 'samp', 'script', 'section', 'select', 'small', 'source', 'span', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'title', 'tr', 'track', 'u', 'ul', 'var', 'video', 'wbr'].forEach(function (tag) {
   return uiFactory[tag] = function (callback) {
-    return uiFactory(tag).callback(callback);
+    return uiFactory(tag, callback);
   };
 });
 
@@ -326,9 +378,119 @@ uiFactory.svg = function () {
 
 ['a', 'animate', 'animateMotion', 'animateTransform', 'circle', 'clipPath', 'color-profile', 'defs', 'desc', 'discard', 'ellipse', 'feBlend', 'feColorMatrix', 'feComponentTransfer', 'feComposite', 'feConvolveMatrix', 'feDiffuseLighting', 'feDisplacementMap', 'feDistantLight', 'feDropShadow', 'feFlood', 'feFuncA', 'feFuncB', 'feFuncG', 'feFuncR', 'feGaussianBlur', 'feImage', 'feMerge', 'feMergeNode', 'feMorphology', 'feOffset', 'fePointLight', 'feSpecularLighting', 'feSpotLight', 'feTile', 'feTurbulence', 'filter', 'foreignObject', 'g', 'hatch', 'hatchpath', 'image', 'line', 'linearGradient', 'marker', 'mask', 'mesh', 'meshgradient', 'meshpatch', 'meshrow', 'metadata', 'mpath', 'path', 'pattern', 'polygon', 'polyline', 'radialGradient', 'rect', 'script', 'set', 'solidcolor', 'stop', 'style', 'switch', 'symbol', 'text', 'textPath', 'title', 'tspan', 'unknown', 'use', 'view'].forEach(function (tag) {
   return uiFactory.svg[tag] = function (callback) {
-    return uiFactory('http://www.w3.org/2000/svg', tag).callback(callback);
+    return uiFactory('http://www.w3.org/2000/svg', tag, callback);
   };
-});
-/* exported uif */
+}); ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CUSTOMIZE UI FACTORY
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-var uif = uif || uiFactory;
+/* exported uiFactory__customize */
+
+function uiFactory__customize(element) {
+  for (var _len3 = arguments.length, args = new Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+    args[_key3 - 1] = arguments[_key3];
+  }
+
+  var types, callback; // element = uiFactory(element);
+  // Assign arguments to variables
+  // - [element, ...]
+
+  if (args[0] instanceof Element) {
+    var _args11 = args;
+
+    var _args12 = _toArray(_args11);
+
+    element = _args12[0];
+    args = _args12.slice(1);
+  } // - [!function, ...]
+
+
+  if (typeof args[0] !== 'function') {
+    var _args13 = args;
+
+    var _args14 = _toArray(_args13);
+
+    types = _args14[0];
+    args = _args14.slice(1);
+
+    if (types !== undefined && !Array.isArray(types)) {
+      types = [types];
+    }
+  } // - [function, ...]
+
+
+  if (typeof args[0] === 'function') {
+    var _args15 = args;
+
+    var _args16 = _toArray(_args15);
+
+    callback = _args16[0];
+    args = _args16.slice(1);
+  }
+
+  element = uiFactory(element);
+
+  function setBeforeProperties(beforeProperties) {
+    beforeProperties(true);
+
+    element.properties = function (originalProperties) {
+      return function (properties, callback) {
+        beforeProperties(false);
+        return originalProperties.call(this, properties, callback);
+      };
+    }(element.properties);
+  }
+
+  function setAfterProperties(afterProperties) {
+    afterProperties(true);
+
+    element.properties = function (originalProperties) {
+      return function (properties, callback) {
+        return originalProperties.call(this, properties, function (element) {
+          afterProperties(false);
+
+          if (typeof callback === 'function') {
+            return callback.call(this, element);
+          }
+        });
+      };
+    }(element.properties);
+  }
+
+  function setBeforeContents(beforeContents) {
+    beforeContents(true);
+
+    element.contents = function (originalContents) {
+      return function (contents, callback, callRenderOnContents) {
+        beforeContents(false);
+        return originalContents.call(this, contents, callback, callRenderOnContents);
+      };
+    }(element.contents);
+  }
+
+  function setAfterContents(afterContents) {
+    afterContents(true);
+
+    element.contents = function (originalContents) {
+      return function (contents, callback, callRenderOnContents) {
+        return originalContents.call(this, contents, function (element) {
+          afterContents(false);
+
+          if (typeof callback === 'function') {
+            return callback.call(this, element);
+          }
+        }, callRenderOnContents);
+      };
+    }(element.contents);
+  }
+
+  return {
+    element: element,
+    types: types,
+    callback: callback,
+    setBeforeProperties: setBeforeProperties,
+    setAfterProperties: setAfterProperties,
+    setBeforeContents: setBeforeContents,
+    setAfterContents: setAfterContents
+  };
+}
