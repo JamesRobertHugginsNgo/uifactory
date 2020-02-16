@@ -377,3 +377,4 @@ function uiFactory__customize(element, ...args) {
 		setBeforeContents, setAfterContents
 	};
 }
+
