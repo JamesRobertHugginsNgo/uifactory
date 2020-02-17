@@ -30,7 +30,7 @@ function buildJs() {
 		.pipe(rename((path) => {
 			path.basename += '.min';
 		}))
-		.pipe(sourcemaps.write())
+		.pipe(sourcemaps.write('./'))
 		.pipe(gulp.dest('dist'));
 }
 function watchJs() {
@@ -51,7 +51,7 @@ function buildStyleCss() {
 		.pipe(rename((path) => {
 			path.basename += '.min';
 		}))
-		.pipe(sourcemaps.write())
+		.pipe(sourcemaps.write('./'))
 		.pipe(gulp.dest('dist'));
 }
 function watchStyleCss() {
