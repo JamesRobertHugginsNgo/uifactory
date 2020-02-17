@@ -16,10 +16,6 @@ function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// UI FACTORY
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 /* exported uiFactory */
 function uiFactory() {
   for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
@@ -82,7 +78,7 @@ function uiFactory() {
 
   if (element instanceof Element) {
     if (!element.definedBy__uiFactory__propertyDescriptors) {
-      element = Object.defineProperties(element, uiFactory__propertyDescriptors);
+      element = Object.defineProperties(element, uiFactory.propertyDescriptors);
     } // Add initial contents
 
 
@@ -96,16 +92,8 @@ function uiFactory() {
 
   return element.callback(args[0]);
 }
-/* exported uif */
 
-
-var uif = uif || uiFactory; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// PROPERTY DESCRIPTOR
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/* exported uiFactoryPropertyDescriptors */
-
-var uiFactory__propertyDescriptors = {
+uiFactory.propertyDescriptors = {
   definedBy__uiFactory__propertyDescriptors: {
     value: true
   },
@@ -362,10 +350,7 @@ var uiFactory__propertyDescriptors = {
     },
     writable: true
   }
-}; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ALIAS FUNCTIONS
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+};
 ['a', 'abbr', 'address', 'area', 'article', 'aside', 'audio', 'b', 'base', 'bdi', 'bdo', 'blockquote', 'body', 'br', 'button', 'canvas', 'caption', 'cite', 'code', 'col', 'colgroup', 'data', 'datalist', 'dd', 'del', 'details', 'dfn', 'dialog', 'div', 'dl', 'dt', 'em', 'embed', 'fieldset', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hgroup', 'hr', 'html', 'i', 'iframe', 'img', 'input', 'ins', 'kbd', 'keygen', 'label', 'legend', 'li', 'link', 'main', 'map', 'mark', 'menu', 'menuitem', 'meta', 'meter', 'nav', 'noscript', 'object', 'ol', 'optgroup', 'option', 'output', 'p', 'param', 'pre', 'progress', 'q', 'rb', 'rp', 'rt', 'rtc', 'ruby', 's', 'samp', 'script', 'section', 'select', 'small', 'source', 'span', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'title', 'tr', 'track', 'u', 'ul', 'var', 'video', 'wbr'].forEach(function (tag) {
   return uiFactory[tag] = function (callback) {
     return uiFactory(tag, callback);
@@ -380,19 +365,14 @@ uiFactory.svg = function () {
   return uiFactory.svg[tag] = function (callback) {
     return uiFactory('http://www.w3.org/2000/svg', tag, callback);
   };
-}); ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// CUSTOMIZE UI FACTORY
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+});
 
-/* exported uiFactory__customize */
-
-function uiFactory__customize(element) {
+uiFactory.customize = function (element) {
   for (var _len3 = arguments.length, args = new Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
     args[_key3 - 1] = arguments[_key3];
   }
 
-  var types, callback; // element = uiFactory(element);
-  // Assign arguments to variables
+  var types, callback; // Assign arguments to variables
   // - [element, ...]
 
   if (args[0] instanceof Element) {
@@ -493,4 +473,8 @@ function uiFactory__customize(element) {
     setBeforeContents: setBeforeContents,
     setAfterContents: setAfterContents
   };
-}
+};
+/* exported uif */
+
+
+var uif = uif || uiFactory;

@@ -1,15 +1,15 @@
-/* global uiFactory uiFactory__customize */
+/* global uiFactory */
 
 /* exported uifBootstrap4 */
 const uifBootstrap4 = {};
 
 /* exported uifbs4 */
-const uifbs4 = window.uifBs4 || uifBootstrap4;
+const uifbs4 = window.uifbs4 || uifBootstrap4;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 uifBootstrap4.container = function (...args) {
-	const { element, types, callback, setAfterProperties } = uiFactory__customize('div', ...args);
+	const { element, types, callback, setAfterProperties } = uiFactory.customize('div', ...args);
 
 	setAfterProperties(function () {
 		if (types) {
@@ -25,7 +25,7 @@ uifBootstrap4.container = function (...args) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 uifBootstrap4.row = function (...args) {
-	const { element, callback, setAfterProperties } = uiFactory__customize('div', ...args);
+	const { element, callback, setAfterProperties } = uiFactory.customize('div', ...args);
 
 	setAfterProperties(function () {
 		element.classList.add('row');
@@ -37,7 +37,7 @@ uifBootstrap4.row = function (...args) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 uifBootstrap4.col = function (...args) {
-	const { element, types, callback, setAfterProperties } = uiFactory__customize('div', ...args);
+	const { element, types, callback, setAfterProperties } = uiFactory.customize('div', ...args);
 
 	setAfterProperties(function () {
 		element.classList.add('col');
@@ -52,29 +52,40 @@ uifBootstrap4.col = function (...args) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 uifBootstrap4.breadcrumb = function (...args) {
-	const { element, callback, setAfterContents } = uiFactory__customize('div', ...args);
+	const listElement = uiFactory.ol();
+	const { setAfterProperties, setAfterContents } = uiFactory.customize(listElement, ...args);
+	setAfterProperties(function () {
+		listElement.classList.add('breadcrumb');
+	});
+	setAfterContents(function (init) {
+		if (init) {
+			return;
+		}
 
-	element.properties({ 'aria-label': 'breadcrumb' }).contents([
-		uiFactory.ol(function (el) {
-			element.list = el;
-			element.list.end = element;
-		}).properties({ class: 'breadcrumb' })
-	]);
-
-	element.contents = function (...args) {
-		return element.list.contents(...args).end;
-	};
-
-	setAfterContents(function () {
-		element.list.contents([...element.list.childNodes].map((item, index, array) => {
-			return uiFactory.li().properties({
+		[...listElement.childNodes].forEach((item, index, array) => {
+			const listItem = uiFactory.li().properties({
 				class: [
 					'breadcrumb-item',
 					index === array.length - 1 ? 'active' : null
 				].filter((value) => value).join(' ')
-			}).contents(item);
-		}));
+			});
+			item.parentNode.insertBefore(listItem, item);
+			listItem.contents(item);
+		});
 	});
+
+	const { element, callback } = uiFactory.customize('div', ...args);
+
+	listElement.end = element;
+	element.list = listElement;
+
+	element.properties({ 'aria-label': 'breadcrumb' }).contents([
+		listElement
+	]);
+
+	element.contents = function (contents, callback) {
+		return listElement.contents(contents, callback).end;
+	};
 
 	return element.callback(callback);
 };
@@ -83,7 +94,7 @@ uifBootstrap4.breadcrumb = function (...args) {
 
 uifBootstrap4.button = function (...args) {
 	const defaultButton = uiFactory('button').properties({ type: 'button' });
-	const { element, types, callback, setAfterProperties } = uiFactory__customize(defaultButton, ...args);
+	const { element, types, callback, setAfterProperties } = uiFactory.customize(defaultButton, ...args);
 
 	setAfterProperties(function () {
 		element.classList.add('btn');
@@ -98,7 +109,7 @@ uifBootstrap4.button = function (...args) {
 ////////////////////////////////////////////////////////////////////////////////
 
 uifBootstrap4.buttonGroup = function (label, ...args) {
-	const { element, callback, setAfterProperties } = uiFactory__customize('div', ...args);
+	const { element, callback, setAfterProperties } = uiFactory.customize('div', ...args);
 
 	element.properties({ role: 'group', 'aria-label': label });
 
@@ -112,7 +123,7 @@ uifBootstrap4.buttonGroup = function (label, ...args) {
 ////////////////////////////////////////////////////////////////////////////////
 
 uifBootstrap4.buttonToolbar = function (label, ...args) {
-	const { element, callback, setAfterProperties } = uiFactory__customize('div', ...args);
+	const { element, callback, setAfterProperties } = uiFactory.customize('div', ...args);
 
 	element.properties({ role: 'toolbar', 'aria-label': label });
 

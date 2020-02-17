@@ -1,7 +1,3 @@
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// UI FACTORY
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 /* exported uiFactory */
 function uiFactory(...args) {
 	let element;
@@ -32,7 +28,7 @@ function uiFactory(...args) {
 
 	if (element instanceof Element) {
 		if (!element.definedBy__uiFactory__propertyDescriptors) {
-			element = Object.defineProperties(element, uiFactory__propertyDescriptors);
+			element = Object.defineProperties(element, uiFactory.propertyDescriptors);
 		}
 
 		// Add initial contents
@@ -45,15 +41,7 @@ function uiFactory(...args) {
 	return element.callback(args[0]);
 }
 
-/* exported uif */
-let uif = uif || uiFactory;
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// PROPERTY DESCRIPTOR
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/* exported uiFactoryPropertyDescriptors */
-const uiFactory__propertyDescriptors = {
+uiFactory.propertyDescriptors = {
 	definedBy__uiFactory__propertyDescriptors: {
 		value: true
 	},
@@ -265,10 +253,6 @@ const uiFactory__propertyDescriptors = {
 	}
 };
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ALIAS FUNCTIONS
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 ['a', 'abbr', 'address', 'area', 'article', 'aside', 'audio', 'b', 'base', 'bdi', 'bdo', 'blockquote', 'body', 'br',
 	'button', 'canvas', 'caption', 'cite', 'code', 'col', 'colgroup', 'data', 'datalist', 'dd', 'del', 'details', 'dfn',
 	'dialog', 'div', 'dl', 'dt', 'em', 'embed', 'fieldset', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5',
@@ -294,15 +278,8 @@ uiFactory.svg = () => uif('http://www.w3.org/2000/svg', 'svg');
 		return uiFactory('http://www.w3.org/2000/svg', tag, callback);
 	});
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// CUSTOMIZE UI FACTORY
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/* exported uiFactory__customize */
-function uiFactory__customize(element, ...args) {
+uiFactory.customize = function(element, ...args) {
 	let types, callback;
-
-	// element = uiFactory(element);
 
 	// Assign arguments to variables
 	// - [element, ...]
@@ -376,5 +353,7 @@ function uiFactory__customize(element, ...args) {
 		setBeforeProperties, setAfterProperties,
 		setBeforeContents, setAfterContents
 	};
-}
+};
 
+/* exported uif */
+let uif = uif || uiFactory;
