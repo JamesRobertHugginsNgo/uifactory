@@ -76,6 +76,10 @@ function uiFactory() {
         args = _args10.slice(1);
       }
 
+  if (element == null) {
+    element = uiFactory('div');
+  }
+
   if (element instanceof Element) {
     if (!element.definedBy__uiFactory__propertyDescriptors) {
       element = Object.defineProperties(element, uiFactory.propertyDescriptors);

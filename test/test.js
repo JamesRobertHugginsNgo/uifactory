@@ -4,12 +4,12 @@ const header = uif.header().properties({ class: 'bg-dark text-white' }).contents
 	uifbs4.container('fluid').contents([
 		uifbs4.row().properties({ class: 'align-items-center' }).contents([
 			uifbs4.col().contents([
-				uif.div().properties({ class: 'p-3' }).contents([
+				uif().properties({ class: 'p-3' }).contents([
 					'HEADER'
 				])
 			]),
 			uifbs4.col().contents([
-				uif.div().properties({ class: 'p-3 text-right' }).contents([
+				uif().properties({ class: 'p-3 text-right' }).contents([
 					uifbs4.button(['outline-light']).contents([
 						'MENU'
 					])
