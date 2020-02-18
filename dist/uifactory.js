@@ -103,9 +103,9 @@ uiFactory.propertyDescriptors = {
   },
   // Callback
   callback: {
-    value: function value(callback) {
-      if (typeof callback === 'function') {
-        callback(this);
+    value: function value(optCallback) {
+      if (typeof optCallback === 'function') {
+        optCallback(this);
       }
 
       return this;
