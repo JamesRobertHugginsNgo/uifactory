@@ -26,7 +26,7 @@ function uiFactory() {
   // A. [string, string, !function?, ...]
 
   if (typeof args[0] === 'string' && typeof args[1] === 'string') {
-    var namespaceURI, qualifiedName, options;
+    var namespaceURI, qualifiedName, optOptions;
     var _args = args;
 
     var _args2 = _toArray(_args);
@@ -40,14 +40,14 @@ function uiFactory() {
 
       var _args4 = _toArray(_args3);
 
-      options = _args4[0];
+      optOptions = _args4[0];
       args = _args4.slice(1);
     }
 
-    element = document.createElementNS(namespaceURI, qualifiedName, options);
+    element = document.createElementNS(namespaceURI, qualifiedName, optOptions);
   } // B. [string, !function?, ...]
   else if (typeof args[0] === 'string') {
-      var tagName, _options;
+      var tagName, _optOptions;
 
       var _args5 = args;
 
@@ -61,11 +61,11 @@ function uiFactory() {
 
         var _args8 = _toArray(_args7);
 
-        _options = _args8[0];
+        _optOptions = _args8[0];
         args = _args8.slice(1);
       }
 
-      element = document.createElement(tagName, _options);
+      element = document.createElement(tagName, _optOptions);
     } // C. [Element, function?]
     else if (args[0] instanceof Element) {
         var _args9 = args;
@@ -91,10 +91,10 @@ function uiFactory() {
 
       (_element = element).contents.apply(_element, _toConsumableArray(element.childNodes));
     }
-  } // Return element and start method chaining
+  }
 
-
-  return element.callback(args[0]);
+  var optCallback = args[0];
+  return element.callback(optCallback);
 }
 
 uiFactory.propertyDescriptors = {
@@ -355,6 +355,11 @@ uiFactory.propertyDescriptors = {
     writable: true
   }
 };
+uiFactory.propertyDescriptors.cbk = uiFactory.propertyDescriptors.clbk = uiFactory.propertyDescriptors.callback;
+uiFactory.propertyDescriptors.evnt = uiFactory.propertyDescriptors.events;
+uiFactory.propertyDescriptors.prop = uiFactory.propertyDescriptors.properties;
+uiFactory.propertyDescriptors.cont = uiFactory.propertyDescriptors.contents;
+uiFactory.propertyDescriptors.rend = uiFactory.propertyDescriptors.render;
 ['a', 'abbr', 'address', 'area', 'article', 'aside', 'audio', 'b', 'base', 'bdi', 'bdo', 'blockquote', 'body', 'br', 'button', 'canvas', 'caption', 'cite', 'code', 'col', 'colgroup', 'data', 'datalist', 'dd', 'del', 'details', 'dfn', 'dialog', 'div', 'dl', 'dt', 'em', 'embed', 'fieldset', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hgroup', 'hr', 'html', 'i', 'iframe', 'img', 'input', 'ins', 'kbd', 'keygen', 'label', 'legend', 'li', 'link', 'main', 'map', 'mark', 'menu', 'menuitem', 'meta', 'meter', 'nav', 'noscript', 'object', 'ol', 'optgroup', 'option', 'output', 'p', 'param', 'pre', 'progress', 'q', 'rb', 'rp', 'rt', 'rtc', 'ruby', 's', 'samp', 'script', 'section', 'select', 'small', 'source', 'span', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'title', 'tr', 'track', 'u', 'ul', 'var', 'video', 'wbr'].forEach(function (tag) {
   return uiFactory[tag] = function (callback) {
     return uiFactory(tag, callback);
@@ -428,7 +433,7 @@ uiFactory.customize = function (element) {
   function setAfterProperties(afterProperties) {
     afterProperties(true);
 
-    element.properties = function (originalProperties) {
+    element.properties = element.prop = function (originalProperties) {
       return function (properties, callback) {
         return originalProperties.call(this, properties, function (element) {
           afterProperties(false);
@@ -444,7 +449,7 @@ uiFactory.customize = function (element) {
   function setBeforeContents(beforeContents) {
     beforeContents(true);
 
-    element.contents = function (originalContents) {
+    element.contents = element.cont = function (originalContents) {
       return function (contents, callback, callRenderOnContents) {
         beforeContents(false);
         return originalContents.call(this, contents, callback, callRenderOnContents);

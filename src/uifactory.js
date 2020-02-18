@@ -5,21 +5,21 @@ function uiFactory(...args) {
 	// Branch - based on args pattern
 	// A. [string, string, !function?, ...]
 	if (typeof args[0] === 'string' && typeof args[1] === 'string') {
-		let namespaceURI, qualifiedName, options;
+		let namespaceURI, qualifiedName, optOptions;
 		[namespaceURI, qualifiedName, ...args] = args;
 		if (typeof args[0] !== 'function') {
-			[options, ...args] = args;
+			[optOptions, ...args] = args;
 		}
-		element = document.createElementNS(namespaceURI, qualifiedName, options);
+		element = document.createElementNS(namespaceURI, qualifiedName, optOptions);
 	}
 	// B. [string, !function?, ...]
 	else if (typeof args[0] === 'string') {
-		let tagName, options;
+		let tagName, optOptions;
 		[tagName, ...args] = args;
 		if (typeof args[0] !== 'function') {
-			[options, ...args] = args;
+			[optOptions, ...args] = args;
 		}
-		element = document.createElement(tagName, options);
+		element = document.createElement(tagName, optOptions);
 	}
 	// C. [Element, function?]
 	else if (args[0] instanceof Element) {
@@ -41,8 +41,8 @@ function uiFactory(...args) {
 		}
 	}
 
-	// Return element and start method chaining
-	return element.callback(args[0]);
+	const optCallback = args[0];
+	return element.callback(optCallback);
 }
 
 uiFactory.propertyDescriptors = {
@@ -52,9 +52,9 @@ uiFactory.propertyDescriptors = {
 
 	// Callback
 	callback: {
-		value(callback) {
-			if (typeof callback === 'function') {
-				callback(this);
+		value(optCallback) {
+			if (typeof optCallback === 'function') {
+				optCallback(this);
 			}
 
 			return this;
@@ -257,6 +257,12 @@ uiFactory.propertyDescriptors = {
 	}
 };
 
+uiFactory.propertyDescriptors.cbk = uiFactory.propertyDescriptors.clbk = uiFactory.propertyDescriptors.callback;
+uiFactory.propertyDescriptors.evnt = uiFactory.propertyDescriptors.events;
+uiFactory.propertyDescriptors.prop = uiFactory.propertyDescriptors.properties;
+uiFactory.propertyDescriptors.cont = uiFactory.propertyDescriptors.contents;
+uiFactory.propertyDescriptors.rend = uiFactory.propertyDescriptors.render;
+
 ['a', 'abbr', 'address', 'area', 'article', 'aside', 'audio', 'b', 'base', 'bdi', 'bdo', 'blockquote', 'body', 'br',
 	'button', 'canvas', 'caption', 'cite', 'code', 'col', 'colgroup', 'data', 'datalist', 'dd', 'del', 'details', 'dfn',
 	'dialog', 'div', 'dl', 'dt', 'em', 'embed', 'fieldset', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5',
@@ -316,7 +322,7 @@ uiFactory.customize = function(element, ...args) {
 
 	function setAfterProperties(afterProperties) {
 		afterProperties(true);
-		element.properties = (function (originalProperties) {
+		element.properties = element.prop = (function (originalProperties) {
 			return function (properties, callback) {
 				return originalProperties.call(this, properties, function (element) {
 					afterProperties(false);
@@ -330,7 +336,7 @@ uiFactory.customize = function(element, ...args) {
 
 	function setBeforeContents(beforeContents) {
 		beforeContents(true);
-		element.contents = (function (originalContents) {
+		element.contents = element.cont = (function (originalContents) {
 			return function (contents, callback, callRenderOnContents) {
 				beforeContents(false);
 				return originalContents.call(this, contents, callback, callRenderOnContents);
