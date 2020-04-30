@@ -22,7 +22,7 @@
   "homepage": "https://github.com/JamesRobertHugginsNgo/uifactory#readme",
   "dependencies": {
     "bootstrap": "^4.4.1",
-    "jquery": "^3.4.1"
+    "jquery": "^3.5.0"
   },
   "devDependencies": {
     "@babel/core": "^7.8.4",
